@@ -169,6 +169,10 @@ dsh-cu selftest                   # 全链路自检（见 tools/selftest.sh）
 
 ---
 
+## 反馈
+
+遇到问题或想要新功能，[提一个 issue](https://github.com/OrderG-X/dsh-mac-computer-use/issues/new/choose)。报问题时写上 DSH 版本和插件版本，修起来最快。
+
 ## License
 
 MIT。`tools/dsh-cu.swift` 是自包含单文件，想改直接改。
