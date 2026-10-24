@@ -45,7 +45,9 @@ export function findBin() {
 export const OVERLAY = process.env.DSH_CU_OVERLAY || path.join(os.homedir(), '.dsh/bin/dsh-cursor-overlay')
 
 // 只认当前账号的浮层：别的账号开着的不算、也不去关
-const MINE = ['-U', String(process.getuid()), '-f', 'dsh-cursor-overlay']
+// Windows / Linux 上没有 getuid：模块顶层直接调会让整个插件导入失败（DSH 里显示「没启动」）
+const UID = typeof process.getuid === 'function' ? String(process.getuid()) : ''
+const MINE = ['-U', UID, '-f', 'dsh-cursor-overlay']
 
 export function overlayState() {
   let installed = false, running = false

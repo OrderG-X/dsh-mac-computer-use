@@ -62,6 +62,7 @@ function fifoOpen() {
 /** 只认当前账号的浮层：别的账号开着浮层不算（否则每次操作都白等它的 FIFO） */
 function overlayRunning() {
   return new Promise((resolve) => {
+    if (typeof process.getuid !== 'function') return resolve(false)
     execFile('/usr/bin/pgrep', ['-U', String(process.getuid()), '-f', 'dsh-cursor-overlay'], (err) => resolve(!err))
   })
 }
@@ -650,10 +651,15 @@ export function apply(ctx, config) {
     }),
   ]
 
-  for (const tool of tools) {
-    try { ctx.tools.register(tool) } catch (e) { trace(`注册 ${tool.name} 失败: ${e && e.message}`); throw e }
+  // 不是 macOS 就不给模型这些工具（用不了）；设置页照样挂，卡片会写「只支持 macOS」
+  if (process.platform !== 'darwin') {
+    trace(`不是 macOS（${process.platform}），不注册桌面工具`)
+  } else {
+    for (const tool of tools) {
+      try { ctx.tools.register(tool) } catch (e) { trace(`注册 ${tool.name} 失败: ${e && e.message}`); throw e }
+    }
+    trace(`已注册 ${tools.length} 个工具: ${tools.map((t) => t.name).join(', ')}`)
   }
-  trace(`已注册 ${tools.length} 个工具: ${tools.map((t) => t.name).join(', ')}`)
 
   // DSH 设置页的数据路由。挂不上也只是设置页没数据，绝不能连累工具注册
   try {
