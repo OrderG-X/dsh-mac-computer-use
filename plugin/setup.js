@@ -7,10 +7,32 @@ import { execFile, execFileSync } from 'node:child_process'
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
-// 找 dsh-cu 的位置：先看环境变量，再看待安装位置，最后是开发目录（本机调试用）
+/** 安装包里自带的程序（发版时编好的通用程序，Apple 芯片和 Intel 都能跑），见 tools/build-bin.mjs */
+const BUNDLED_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), 'bin')
+
+/** 自带的程序：在就确保能执行（个别安装方式会丢掉可执行位），回路径；不在回 null */
+function bundled(name) {
+  if (process.platform !== 'darwin') return null
+  const p = path.join(BUNDLED_DIR, name)
+  try {
+    fs.accessSync(p, fs.constants.X_OK)
+    return p
+  } catch {}
+  try {
+    fs.chmodSync(p, 0o755)
+    fs.accessSync(p, fs.constants.X_OK)
+    return p
+  } catch {
+    return null
+  }
+}
+
+// 找 dsh-cu 的位置：先看环境变量，再看插件自带的，再看 install.sh 装的位置，最后是开发目录（本机调试用）
 const CANDIDATES = [
   ['env', process.env.DSH_CU_BIN],
+  ['bundled', bundled('dsh-cu')],
   ['installed', path.join(os.homedir(), '.dsh/bin/dsh-cu')],
   ['dev', path.join(os.homedir(), 'Projects/dsh-cua-patched/tools/dsh-cu')],
 ].filter(([, p]) => p)
@@ -25,7 +47,8 @@ export const ENGINE_FEATURES = ['window-shot']
 
 /** 找不到二进制时的报错：必须自带公开安装步骤，不能只有本机才看得懂的路径提示。 */
 export const INSTALL_HINT = [
-  'dsh-cu 还没装（一次性前置，装完不用再管）：',
+  '找不到命令行引擎 dsh-cu。插件安装包里本来自带一份；先在 DSH 里把插件更新到最新版或重装一次。',
+  '还是不行的话，自己从源码编译（一次性）：',
   '1. 装 Xcode 命令行工具（提供 swiftc）：xcode-select --install',
   '2. 拉源码并编译：',
   `     ${INSTALL_CMD}`,
@@ -34,7 +57,7 @@ export const INSTALL_HINT = [
   '二进制在别处的话，用 DSH_CU_BIN=/path/to/dsh-cu 指过去。',
 ].join('\n')
 
-/** @returns {{ path: string, source: 'env'|'installed'|'dev' } | null} */
+/** @returns {{ path: string, source: 'env'|'bundled'|'installed'|'dev' } | null} */
 export function findBin() {
   for (const [source, p] of CANDIDATES) {
     try { fs.accessSync(p, fs.constants.X_OK); return { path: p, source } } catch {}
@@ -42,7 +65,7 @@ export function findBin() {
   return null
 }
 
-export const OVERLAY = process.env.DSH_CU_OVERLAY || path.join(os.homedir(), '.dsh/bin/dsh-cursor-overlay')
+export const OVERLAY = process.env.DSH_CU_OVERLAY || bundled('dsh-cursor-overlay') || path.join(os.homedir(), '.dsh/bin/dsh-cursor-overlay')
 
 // 只认当前账号的浮层：别的账号开着的不算、也不去关
 // Windows / Linux 上没有 getuid：模块顶层直接调会让整个插件导入失败（DSH 里显示「没启动」）

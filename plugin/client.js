@@ -44,10 +44,11 @@ window.__ModuleLoader__.load({
       windowsUnknown: '命令行工具跑不起来，看不到窗口',
       summaryOn: '可以用了 · 能看到 %n 个窗口',
       summaryPerm: '缺少系统权限，点开看怎么开',
-      summaryOff: '还没装命令行工具，点开看怎么装',
+      summaryOff: '找不到命令行工具，点开看怎么办',
       binTitle: '命令行工具 dsh-cu',
       binOk: '已装好',
-      binMissing: '还没装。在「终端」里运行下面这条（要先装 Xcode 命令行工具：xcode-select --install）：',
+      binMissing: '找不到插件自带的程序。先在 DSH 里把插件更新到最新版或重装一次；还不行，就在「终端」里运行下面这条自己编译（要先装 Xcode 命令行工具：xcode-select --install）：',
+      srcBundled: '插件自带',
       srcInstalled: '~/.dsh/bin',
       srcDev: '开发目录',
       srcEnv: 'DSH_CU_BIN',
@@ -87,10 +88,11 @@ window.__ModuleLoader__.load({
       windowsUnknown: 'The command-line tool did not run, so no windows are visible',
       summaryOn: 'Ready · can see %n window(s)',
       summaryPerm: 'Missing system permissions — open for steps',
-      summaryOff: 'Command-line tool not installed — open for steps',
+      summaryOff: 'Command-line tool not found — open for what to do',
       binTitle: 'Command-line tool dsh-cu',
       binOk: 'Installed',
-      binMissing: 'Not installed. Run this in Terminal (needs Xcode Command Line Tools first: xcode-select --install):',
+      binMissing: 'The program bundled with the plugin is missing. Update the plugin to the latest version in DSH, or reinstall it. If that does not help, build it yourself by running this in Terminal (needs Xcode Command Line Tools first: xcode-select --install):',
+      srcBundled: 'bundled with the plugin',
       srcInstalled: '~/.dsh/bin',
       srcDev: 'dev folder',
       srcEnv: 'DSH_CU_BIN',
@@ -277,7 +279,7 @@ window.__ModuleLoader__.load({
             h('div', null, h('p', { className: 'dcu-hint' }, t('binOutdated')), h('div', { className: 'dcu-cmd' }, state.updateCmd)),
             h(Btn, { disabled: busy, onClick: () => run({ action: 'copyUpdate' }, t('updateCopied')) }, t('copyUpdate')))
           : state.bin
-          ? item('bin', 'on', t('binTitle'), t('binOk') + ' · ' + t({ installed: 'srcInstalled', dev: 'srcDev', env: 'srcEnv' }[state.bin.source] || 'srcInstalled'))
+          ? item('bin', 'on', t('binTitle'), t('binOk') + ' · ' + t({ bundled: 'srcBundled', installed: 'srcInstalled', dev: 'srcDev', env: 'srcEnv' }[state.bin.source] || 'srcInstalled'))
           : item('bin', 'off', t('binTitle'), null,
             h('div', null, h('p', { className: 'dcu-hint' }, t('binMissing')), h('div', { className: 'dcu-cmd' }, state.installCmd)),
             h(Btn, { primary: true, disabled: busy, onClick: () => run({ action: 'copyInstall' }, t('copied')) }, t('copyInstall'))),

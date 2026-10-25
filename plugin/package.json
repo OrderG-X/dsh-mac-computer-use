@@ -18,12 +18,16 @@
     "./icon.svg": "./icon.svg",
     "./locale/*.json": "./locale/*.json"
   },
+  "scripts": {
+    "prepack": "node ../tools/build-bin.mjs"
+  },
   "files": [
     "index.js",
     "setup.js",
     "panel.js",
     "client.js",
     "cordis.patch.yml",
+    "bin",
     "locale",
     "icon.svg",
     "package.json"

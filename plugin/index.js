@@ -10,7 +10,8 @@
  *
  * 这正是 Codex 那种 computer use 的做法，也是目前这台机器上唯一确定能走通的路。
  *
- * 底层引擎是 dsh-cu（Swift 单文件命令行，源码在仓库 tools/，install.sh 装到 ~/.dsh/bin/）。
+ * 底层引擎是 dsh-cu（Swift 单文件命令行，源码在仓库 tools/）。发版时编好放进安装包的 bin/，装上就能用；
+ * 也可以用 install.sh 自己编到 ~/.dsh/bin/。
  * 本机环境（命令行在哪、权限、用户设置）在 setup.js；DSH 设置页的后端在 panel.js、前端在 client.js。
  */
 
@@ -131,7 +132,7 @@ const typedLabel = (text) => {
 }
 
 /**
- * 跟引擎约定的协议版本（tools/dsh-cu.swift 的 ENGINE_PROTOCOL）。插件跟着 DSH 自动更新，引擎要手动重跑 install.sh，
+ * 跟引擎约定的协议版本（tools/dsh-cu.swift 的 ENGINE_PROTOCOL）。插件自带的引擎总是对得上；用 DSH_CU_BIN、开发目录里的引擎时
  * 两边可能对不上：旧引擎会把新参数当成输出路径、按旧单位滚动。所以第一次用引擎先核对，对不上就什么都不跑。
  */
 const ENGINE_PROTOCOL = '2'
