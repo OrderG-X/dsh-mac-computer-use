@@ -35,6 +35,12 @@ swiftc -O -o "$BIN/dsh-cursor-overlay" "$HERE/cursor/cursor-overlay.swift" \
   -framework AppKit -framework QuartzCore
 echo "   ✅ $BIN/dsh-cursor-overlay"
 
+# 开发目录里打包（npm pack）留下的自带程序：插件会优先用它，删掉免得用到旧的
+if [ -d "$HERE/plugin/bin" ]; then
+  rm -rf "$HERE/plugin/bin"
+  echo "   （删掉了 plugin/bin 里打包留下的旧程序，插件改用 $BIN 里这份）"
+fi
+
 # ── 3. PATH ─────────────────────────────────────────────────────────────────
 if ! echo "$PATH" | grep -q "$BIN"; then
   echo
