@@ -17,9 +17,9 @@
 >
 > **什么时候用**：「看看我屏幕上有什么」「帮我在这个 App 里点一下」，以及没有命令行、只能用鼠标操作的 Mac 软件。
 >
-> **安装**：`git clone` 本仓库后跑 `./install.sh` 编译引擎（需要 Xcode Command Line Tools），再 `dsh plugin add https://github.com/OrderG-X/dsh-mac-computer-use/releases/latest/download/dsh-mac-computer-use.tgz`，重启 DSH。仅 macOS。
+> **安装**：`dsh plugin add https://github.com/OrderG-X/dsh-mac-computer-use/releases/latest/download/dsh-mac-computer-use.tgz`（或在 DSH 插件页添加这个地址），重启 DSH。安装包自带编好的程序（Apple 芯片和 Intel 都能用，macOS 11 起），不用编译。仅 macOS。
 >
-> **English:** a DeepSeek Harness (DSH) plugin for computer use on macOS. The model sees the screen and controls the Mac through 11 `desktop_*` tools: window list, screenshots, OCR text search, click, type, keys, scroll, drag and app launch. Install: clone this repo, run `./install.sh` (needs Xcode Command Line Tools), then `dsh plugin add` the release tarball above and restart DSH.
+> **English:** a DeepSeek Harness (DSH) plugin for computer use on macOS. The model sees the screen and controls the Mac through 11 `desktop_*` tools: window list, screenshots, OCR text search, click, type, keys, scroll, drag and app launch. Install: `dsh plugin add` the release tarball above (or add it on DSH's plugin page) and restart DSH. The package ships prebuilt universal binaries (Apple silicon and Intel, macOS 11+), so there is nothing to compile.
 
 > 以前叫 `dsh-cu`，2026-10-18 改名。旧地址会自动跳到这里；底层的命令行引擎仍叫 `dsh-cu`。
 > 和别人家的 [dsh-computer-use](https://github.com/988hj7tczd-oss/dsh-computer-use) 不是一个东西：那个靠无障碍树（cua-driver），这个靠截图。
@@ -59,17 +59,21 @@ DSH 上已有的 computer use 插件（`dsh-computer-use`、`dsh-mac-cua` 等）
 
 ## 安装
 
+在 DSH 的**插件页**添加插件，地址填 `https://github.com/OrderG-X/dsh-mac-computer-use/releases/latest/download/dsh-mac-computer-use.tgz`（或者命令行 `dsh plugin add` 这个地址），然后**重启 DSH**。
+
+安装包里自带编好的命令行引擎和光标浮层（Apple 芯片和 Intel 都能用，macOS 11 起），**不用 clone 仓库、不用装 Xcode**。第一次用要在系统设置里给 DeepSeek Harness 开**屏幕录制**和**辅助功能**权限，设置页里有按钮直达。
+
+装好后插件页里叫「**Mac 桌面操作**」。点进去是设置页：能不能用、看得到几个窗口，命令行引擎、屏幕录制权限、辅助功能权限、光标浮层逐项打勾，缺哪个就给哪个的按钮（打开系统设置）；还有「屏幕上显示操作光标」开关。
+
+**自己从源码编译**（改了 Swift 代码时才需要）：
+
 ```bash
 git clone https://github.com/OrderG-X/dsh-mac-computer-use.git
 cd dsh-mac-computer-use
 ./install.sh
 ```
 
-需要 macOS + Xcode Command Line Tools（`xcode-select --install`）。光标是代码画的，不用另装素材。
-
-装完去 DSH 的**插件页**添加插件，地址填 `https://github.com/OrderG-X/dsh-mac-computer-use/releases/latest/download/dsh-mac-computer-use.tgz`（或者命令行 `dsh plugin add` 这个地址），然后**重启 DSH**。
-
-装好后插件页里叫「**Mac 桌面操作**」。点进去是设置页：能不能用、看得到几个窗口，命令行引擎、屏幕录制权限、辅助功能权限、光标浮层逐项打勾，缺哪个就给哪个的按钮（复制安装命令 / 打开系统设置）；还有「屏幕上显示操作光标」开关。
+需要 Xcode Command Line Tools（`xcode-select --install`），装到 `~/.dsh/bin/`。插件优先用自带的程序，要用自己编的，设环境变量 `DSH_CU_BIN=~/.dsh/bin/dsh-cu`（光标浮层是 `DSH_CU_OVERLAY`）。发版时的编译脚本是 `tools/build-bin.mjs`。
 
 ---
 
