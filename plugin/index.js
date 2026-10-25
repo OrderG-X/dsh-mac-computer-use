@@ -316,8 +316,40 @@ function parseWindows(raw) {
   })
 }
 
+const q = (t) => `「${String(t || '').slice(0, 40)}」`
+
+/**
+ * 动作前后两份窗口清单 → 一句话说这一下让窗口变了什么（新开、不见、标题变了、别的应用弹出窗口）。
+ * 只看窗口，不看窗口里的内容；内容要看就用 desktop_observe。
+ */
+export function windowChanges(before, after, pid) {
+  const old = new Map(before.map((w) => [w.windowId, w]))
+  const now = new Map(after.map((w) => [w.windowId, w]))
+  const name = (w) => (w.title ? q(w.title) : `（${w.app}）`)
+  const out = []
+  for (const w of after) {
+    const o = old.get(w.windowId)
+    if (!o) out.push(w.pid === pid ? `新开了窗口${name(w)}` : `${w.app} 弹出了窗口${name(w)}`)
+    else if (o.title !== w.title && w.pid === pid) out.push(`标题${q(o.title)}→${q(w.title)}`)
+  }
+  for (const w of before) if (w.pid === pid && !now.has(w.windowId)) out.push(`窗口${name(w)}不见了（关了或最小化）`)
+  if (!out.length) return '之后：窗口没变化'
+  return `之后：${out.slice(0, 5).join('；')}${out.length > 5 ? ` 等 ${out.length} 处` : ''}`
+}
+
 export function apply(ctx, config) {
   trace('apply 被调用')
+
+  const snapWindows = () => run(['winlist'], 5000).then(parseWindows, () => null)
+  /** 做一个动作，顺带回报窗口变化：模型不用每次再截图确认「点上没有、弹没弹窗」 */
+  async function report(pid, act) {
+    const before = await snapWindows()
+    const text = await act()
+    if (!before) return text
+    await sleep(400) // 等界面反应过来
+    const after = await snapWindows()
+    return after ? `${text}\n${windowChanges(before, after, Number(pid))}` : text
+  }
 
   const tools = [
     defineTool({
@@ -426,7 +458,8 @@ export function apply(ctx, config) {
       description:
         '点击。**优先用 text**（OCR 找屏幕上的文字再点，最稳、不怕界面挪位置）；' +
         '找不到文字再用 x/y 坐标（来自 desktop_screenshot 或 desktop_windows）。' +
-        '默认**投递给目标进程**（不移动你的真实鼠标、不抢前台）；某些应用不响应时加 global=true 走系统事件。',
+        '默认**投递给目标进程**（不移动你的真实鼠标、不抢前台）；某些应用不响应时加 global=true 走系统事件。' +
+        '点完会附一句窗口变化（新开 / 不见 / 标题变了 / 没变化）；输入、按键、拖拽也一样。',
       parameters: {
         pid: { type: 'integer', required: true, description: '目标进程 pid（来自 desktop_windows）' },
         index: { type: 'integer', description: 'desktop_observe 给的编号 —— **最推荐**，比坐标稳' },
@@ -442,7 +475,7 @@ export function apply(ctx, config) {
           await ensureCursor()
           const a = ['click-index', String(args.pid), String(args.index)]
           if (!cursorOn()) a.push('--no-cursor')
-          return { text: await run(a) }
+          return { text: await report(args.pid, () => run(a)) }
         }
         let x = args.x, y = args.y, how = '坐标'
         if (args.text) {
@@ -456,8 +489,7 @@ export function apply(ctx, config) {
         if (args.global) a.push('--global')
         if (!cursorOn()) a.push('--no-cursor')
         // 用引擎的真实结果：进程退出了、没辅助功能权限，引擎会报错，不能一律说点上了
-        const out = await run(a)
-        return { text: args.text ? `${out}（${how}）` : out }
+        return { text: await report(args.pid, async () => { const out = await run(a); return args.text ? `${out}（${how}）` : out }) }
       },
     }),
 
@@ -558,7 +590,7 @@ export function apply(ctx, config) {
       presentCall: present('Desktop type'),
       async execute(args) {
         cursorSay(`label ${typedLabel(args.text)}`)
-        return { text: await run(['type', String(args.pid), args.text]) }
+        return { text: await report(args.pid, () => run(['type', String(args.pid), args.text])) }
       },
     }),
 
@@ -628,7 +660,7 @@ export function apply(ctx, config) {
         cursorSay('label 拖拽')
         const a = ['drag', String(args.pid), String(args.x1), String(args.y1), String(args.x2), String(args.y2)]
         if (!cursorOn()) a.push('--no-cursor')
-        return { text: await run(a) }
+        return { text: await report(args.pid, () => run(a)) }
       },
     }),
 
@@ -647,7 +679,7 @@ export function apply(ctx, config) {
       presentCall: present('Desktop key'),
       async execute(args) {
         const a = ['key', String(args.pid), String(args.keycode), ...(args.flags || [])]
-        return { text: await run(a) }
+        return { text: await report(args.pid, () => run(a)) }
       },
     }),
   ]

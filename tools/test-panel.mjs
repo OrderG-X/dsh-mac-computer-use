@@ -63,7 +63,8 @@ const req = (method, body, headers = {}) => new Promise((resolve, reject) => {
   r.end()
 })
 
-const lastArgs = () => fs.readFileSync(argLog, 'utf8').trim().split('\n').pop()
+// 动作前后各查一次窗口清单（winlist），取最后一条不是 winlist 的
+const lastArgs = () => fs.readFileSync(argLog, 'utf8').trim().split('\n').filter((l) => !l.startsWith('winlist')).pop()
 
 const results = []
 const check = async (name, fn) => {
@@ -93,6 +94,19 @@ try {
   await check('光标开着：点击不带 --no-cursor', async () => {
     await tools.desktop_click.execute({ pid: 1, x: 5, y: 6 })
     assert.match(lastArgs(), /^clickat 1 5 6$/)
+  })
+
+  await check('点完回报窗口变化', async () => {
+    const r = await tools.desktop_click.execute({ pid: 1, x: 5, y: 6 })
+    assert.match(r.text, /之后：窗口没变化$/)
+    const w = (pid, windowId, title, app = 'App') => ({ pid, windowId, title, app })
+    const { windowChanges } = plugin
+    assert.equal(windowChanges([w(1, 2, 'a')], [w(1, 2, 'a')], 1), '之后：窗口没变化')
+    assert.equal(windowChanges([w(1, 2, 'a')], [w(1, 2, 'a'), w(1, 3, '存储')], 1), '之后：新开了窗口「存储」')
+    assert.equal(windowChanges([w(1, 2, 'a')], [w(1, 2, 'b')], 1), '之后：标题「a」→「b」')
+    assert.equal(windowChanges([w(1, 2, 'a')], [], 1), '之后：窗口「a」不见了（关了或最小化）')
+    assert.equal(windowChanges([], [w(9, 5, '', 'Safari')], 1), '之后：Safari 弹出了窗口（Safari）')
+    assert.equal(windowChanges([w(9, 5, 'x')], [w(9, 5, 'y')], 1), '之后：窗口没变化') // 别的应用改标题不算
   })
 
   await check('关光标：写进配置，点击带 --no-cursor', async () => {
