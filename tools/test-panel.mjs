@@ -107,6 +107,10 @@ try {
     assert.equal(windowChanges([w(1, 2, 'a')], [], 1), '之后：窗口「a」不见了（关了或最小化）')
     assert.equal(windowChanges([], [w(9, 5, '', 'Safari')], 1), '之后：Safari 弹出了窗口（Safari）')
     assert.equal(windowChanges([w(9, 5, 'x')], [w(9, 5, 'y')], 1), '之后：窗口没变化') // 别的应用改标题不算
+    const bar = { pid: 9, windowId: 6, title: '', app: 'Google Chrome', width: 123, height: 22 }
+    assert.equal(windowChanges([], [bar], 1), '之后：窗口没变化') // Chrome 左下角的网址条一闪而过，不算
+    assert.equal(windowChanges([{ ...bar, pid: 1 }], [], 1), '之后：窗口没变化')
+    assert.equal(windowChanges([], [{ ...bar, width: 420, height: 260 }], 1), '之后：Google Chrome 弹出了窗口（Google Chrome）') // 没标题但够大：照报
   })
 
   await check('关光标：写进配置，点击带 --no-cursor', async () => {

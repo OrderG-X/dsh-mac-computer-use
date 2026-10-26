@@ -326,13 +326,16 @@ export function windowChanges(before, after, pid) {
   const old = new Map(before.map((w) => [w.windowId, w]))
   const now = new Map(after.map((w) => [w.windowId, w]))
   const name = (w) => (w.title ? q(w.title) : `（${w.app}）`)
+  // 没标题的小条（Chrome 左下角的网址条、提示气泡）一闪就没，不算窗口变化
+  const blip = (w) => !w.title && w.height > 0 && w.height < 60
   const out = []
   for (const w of after) {
     const o = old.get(w.windowId)
+    if (!o && blip(w)) continue
     if (!o) out.push(w.pid === pid ? `新开了窗口${name(w)}` : `${w.app} 弹出了窗口${name(w)}`)
     else if (o.title !== w.title && w.pid === pid) out.push(`标题${q(o.title)}→${q(w.title)}`)
   }
-  for (const w of before) if (w.pid === pid && !now.has(w.windowId)) out.push(`窗口${name(w)}不见了（关了或最小化）`)
+  for (const w of before) if (w.pid === pid && !now.has(w.windowId) && !blip(w)) out.push(`窗口${name(w)}不见了（关了或最小化）`)
   if (!out.length) return '之后：窗口没变化'
   return `之后：${out.slice(0, 5).join('；')}${out.length > 5 ? ` 等 ${out.length} 处` : ''}`
 }
