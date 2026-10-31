@@ -1,6 +1,6 @@
 {
   "name": "dsh-mac-computer-use",
-  "version": "1.5.1",
+  "version": "1.5.2",
   "type": "module",
   "description": "Vision-first Mac computer use for DSH: window list, screenshots, OCR text targeting, numbered elements, background clicks and typing. Works without the accessibility tree.",
   "license": "MIT",

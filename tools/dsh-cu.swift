@@ -309,7 +309,7 @@ case "key":
         }
     }
     makeMainWindow(pid: pid)
-    let src = CGEventSource(stateID: .hidSystemState)
+    let src = quietSource()
     for down in [true, false] {
         guard let e = CGEvent(keyboardEventSource: src, virtualKey: code, keyDown: down) else { fail("按键失败（造不出键盘事件）") }
         e.flags = flags
@@ -493,7 +493,7 @@ case "scroll", "scroll-lines":
         overlayPing("scroll \(dy < 0 ? -1 : 1)")
     }
     // CGEvent 的滚轮值方向跟约定相反（wheel1 正 = 向上、wheel2 正 = 向左），所以取反
-    guard let e = CGEvent(scrollWheelEvent2Source: CGEventSource(stateID: .hidSystemState),
+    guard let e = CGEvent(scrollWheelEvent2Source: quietSource(),
                           units: .line, wheelCount: 2, wheel1: -dy, wheel2: -dx, wheel3: 0) else { fail("造不出滚动事件") }
     e.location = CGPoint(x: x, y: y)
     tagWindow(e, window: targetWindow(pid: pid, at: e.location), at: e.location)
@@ -517,7 +517,7 @@ case "drag":
         usleep(300_000)
         overlayPing("down")
     }
-    let src = CGEventSource(stateID: .hidSystemState)
+    let src = quietSource()
     let from = CGPoint(x: x1, y: y1), to = CGPoint(x: x2, y: y2)
     // 整个拖拽都记在按下时的那个窗口上（AppKit 也是把拖动和松开交给按下的窗口）
     let win = targetWindow(pid: pid, at: from)
@@ -918,9 +918,21 @@ func tagWindow(_ e: CGEvent, window: (number: Int64, origin: CGPoint)?, at p: CG
     WindowEventFields.setWindowLocation?(e, CGPoint(x: p.x - w.origin.x, y: p.y - w.origin.y))
 }
 
+/// 投递给目标进程的事件用这个源。系统默认每发一个合成事件，就把本机真实的键盘鼠标冻住 0.25 秒
+/// （localEventsSuppressionInterval）：点一下卡一下，给 Chromium 逐字打字时整段都动不了，
+/// 用户觉得插件在跟他抢鼠标（issue #2，实测发事件期间真实鼠标一像素都动不了）。投递给 pid 的事件不碰真实鼠标，不用冻
+func quietSource() -> CGEventSource? {
+    guard let s = CGEventSource(stateID: .hidSystemState) else { return nil }
+    s.localEventsSuppressionInterval = 0
+    let all: CGEventFilterMask = [.permitLocalMouseEvents, .permitLocalKeyboardEvents, .permitSystemDefinedEvents]
+    s.setLocalEventsFilterDuringSuppressionState(all, state: .eventSuppressionStateSuppressionInterval)
+    s.setLocalEventsFilterDuringSuppressionState(all, state: .eventSuppressionStateRemoteMouseDrag)
+    return s
+}
+
 /// global=false：投递给目标进程（不移动真实鼠标）；true：走系统事件（会移动真实鼠标，兼容性最好）
 func postClick(pid: pid_t, at point: CGPoint, global: Bool = false) -> Bool {
-    let src = CGEventSource(stateID: .hidSystemState)
+    let src = global ? CGEventSource(stateID: .hidSystemState) : quietSource()
     let win = global ? nil : targetWindow(pid: pid, at: point)
     let commandPress = !global && needsCommandPress(pid: pid)
     for (type, button) in [(CGEventType.leftMouseDown, CGMouseButton.left), (CGEventType.leftMouseUp, CGMouseButton.left)] {
@@ -960,7 +972,7 @@ func makeMainWindow(pid: pid_t, at p: CGPoint? = nil) {
 }
 
 func postText(pid: pid_t, _ text: String) -> Bool {
-    let src = CGEventSource(stateID: .hidSystemState)
+    let src = quietSource()
     let units = Array(text.utf16)
     // AppKit 应用一个按键事件就能收下整段字。Chromium / Electron 在后台只认一个字符的按键，
     // 一次塞多个字（中文、表情、"ab"）整段丢，所以拆成一个 UTF-16 单元一发（表情的两半它自己会拼上）
