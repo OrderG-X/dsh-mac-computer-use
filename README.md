@@ -19,7 +19,7 @@
 >
 > **安装**：DSH「插件」页 →「添加插件」，填 `dsh-mac-computer-use`（npm 包，连不上 npm 会自动换国内镜像），重启 DSH。安装包自带编好的程序（Apple 芯片和 Intel 都能用，macOS 11 起），不用编译。仅 macOS。
 >
-> **English:** a DeepSeek Harness (DSH) plugin for computer use on macOS. The model sees the screen and controls the Mac through 11 `desktop_*` tools: window list, screenshots, OCR text search, click, type, keys, scroll, drag and app launch. Install: `dsh plugin add` the release tarball above (or add it on DSH's plugin page) and restart DSH. The package ships prebuilt universal binaries (Apple silicon and Intel, macOS 11+), so there is nothing to compile.
+> **English:** a DeepSeek Harness (DSH) plugin for computer use on macOS. The model sees the screen and controls the Mac through 11 `desktop_*` tools: window list, screenshots, OCR text search, click, type, keys, scroll, drag and app launch. Install: on the DSH Plugins page, click Add plugin and enter `dsh-mac-computer-use` (an npm package), then restart DSH. The package ships prebuilt universal binaries (Apple silicon and Intel, macOS 11+), so there is nothing to compile.
 
 > 以前叫 `dsh-cu`，2026-10-18 改名。旧地址会自动跳到这里；底层的命令行引擎仍叫 `dsh-cu`。
 > 和别人家的 [dsh-computer-use](https://github.com/988hj7tczd-oss/dsh-computer-use) 不是一个东西：那个靠无障碍树（cua-driver），这个靠截图。
