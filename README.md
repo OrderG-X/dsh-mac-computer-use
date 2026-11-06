@@ -62,7 +62,7 @@ DSH 上已有的 computer use 插件（`dsh-computer-use`、`dsh-mac-cua` 等）
 
 在 DSH 的**插件页**点「添加插件」，填包名 `dsh-mac-computer-use`，然后**重启 DSH**。这是 npm 包：按包名装时，DSH 连不上 npm 官方源会自动改用国内镜像（npmmirror），不经过 GitHub。也可以填发布包地址 `https://github.com/OrderG-X/dsh-mac-computer-use/releases/latest/download/dsh-mac-computer-use.tgz`，那样要能连上 GitHub。
 
-**更新**：在「插件」页把它卸载，再按上面添加一次。新版发布后大约一天按包名才装得到（DSH 装插件用的 pnpm 默认不装刚发布的版本），急的话填发布包地址。
+**更新**：DSH 0.2.2 起，在「插件」页点开它，点「更新到 …」；更老的 DSH 先卸载，再按上面添加一次。新版发布后大约一天才装得到（DSH 装插件用的 pnpm 默认不装刚发布的版本）；急的话卸载后填发布包地址，不过这样装的以后不能点更新。
 
 安装包里自带编好的命令行引擎和光标浮层（Apple 芯片和 Intel 都能用，macOS 11 起），**不用 clone 仓库、不用装 Xcode**。第一次用要在系统设置里给 DeepSeek Harness 开**屏幕录制**和**辅助功能**权限，设置页里有按钮直达。
 

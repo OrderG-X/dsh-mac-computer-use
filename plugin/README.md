@@ -14,7 +14,7 @@ DeepSeek Harness（DSH）插件：让模型看屏幕、点按钮、打字，直�
 
 ## 更新
 
-在「插件」页把它卸载，再添加一次。DSH 用 pnpm 安装插件，而 pnpm 默认不装刚发布的版本，所以新版大约发布一天后，按包名才能装到。
+DSH 0.2.2 起，在「插件」页点开它，点「更新到 …」；更老的 DSH 先卸载，再添加一次。DSH 用 pnpm 安装插件，而 pnpm 默认不装刚发布的版本，所以新版大约发布一天后才装得到。
 
 ## English
 
@@ -29,6 +29,6 @@ It needs macOS 11 or later and runs on Apple silicon and Intel. The package ship
 
 **Install:** in DSH, open the Plugins page, click Add plugin and enter `dsh-mac-computer-use`, then restart DSH. On first use, grant DeepSeek Harness the Screen Recording and Accessibility permissions.
 
-**Update:** uninstall the plugin and add it again. A new version can be installed by package name about a day after release, because the pnpm that DSH uses skips brand-new versions by default.
+**Update:** on DSH 0.2.2 or later, open the plugin on the Plugins page and click "Update to …". On older DSH, uninstall it and add it again. A new version can be installed about a day after it is released, because the pnpm that DSH uses skips brand-new versions by default.
 
 完整说明 / Full docs: https://github.com/OrderG-X/dsh-mac-computer-use
